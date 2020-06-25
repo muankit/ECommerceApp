@@ -8,6 +8,8 @@ import android.os.Bundle;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import net.ecommerceapp.LoginUI.LoginActivity;
+
 public class SplashActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -50,7 +52,7 @@ public class SplashActivity extends AppCompatActivity {
                     try {
                         sleep(500);
 
-                        Intent loginIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
                         startActivity(loginIntent);
                         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         finish();
