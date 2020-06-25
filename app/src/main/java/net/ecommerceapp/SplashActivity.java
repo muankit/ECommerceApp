@@ -4,17 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import net.ecommerceapp.LoginUI.LoginActivity;
-import net.ecommerceapp.Utils.DeviceUtils;
+import net.ecommerceapp.LoginUI.WelcomeActivity;
 
 public class SplashActivity extends AppCompatActivity {
-
-    private static final String TAG = "SplashActivity";
 
     private FirebaseAuth mAuth;
 
@@ -33,7 +29,7 @@ public class SplashActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     try {
-                        sleep(500);
+                        sleep(3000);
 
                         // TODO change main activity to another here
                         Intent loginIntent = new Intent(getApplicationContext(), MainActivity.class);
@@ -54,9 +50,9 @@ public class SplashActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     try {
-                        sleep(500);
+                        sleep(3000);
 
-                        Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
+                        Intent loginIntent = new Intent(getApplicationContext(), WelcomeActivity.class);
                         startActivity(loginIntent);
                         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         finish();
