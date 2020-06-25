@@ -13,6 +13,6 @@ public class MainActivity extends AppCompatActivity {
 
         // this is my first commit to check
 
-        // rakesh loda dega ankit ko
+        // rakesh lodya
     }
 }
