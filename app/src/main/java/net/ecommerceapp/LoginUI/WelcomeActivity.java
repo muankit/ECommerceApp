@@ -26,9 +26,16 @@ public class WelcomeActivity extends AppCompatActivity {
         btnContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //startActivity(new Intent(getApplicationContext(),LoginActivity.class));
-                LoginFragment loginFrag = new LoginFragment();
-                getSupportFragmentManager().beginTransaction().replace(R.id.login_frame_layout, loginFrag).addToBackStack(null).commit();
+
+               /* LoginFragment loginFrag = new LoginFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.login_frame_layout, loginFrag)
+                        .addToBackStack(null)
+                        .commit();*/
+
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.slide_up, R.anim.slide_down, R.anim.slide_up, R.anim.slide_down)
+                        .replace(R.id.login_frame_layout, new LoginFragment()).addToBackStack(null).commit();
             }
         });
     }
