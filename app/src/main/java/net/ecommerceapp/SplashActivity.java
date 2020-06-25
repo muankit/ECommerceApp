@@ -71,10 +71,6 @@ public class SplashActivity extends AppCompatActivity {
 
         FirebaseUser user = mAuth.getCurrentUser();
 
-        if (user!= null){
-            return true;
-        }
-
-        return false;
+        return user != null;
     }
 }
