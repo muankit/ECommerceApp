@@ -4,13 +4,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import net.ecommerceapp.LoginUI.LoginActivity;
+import net.ecommerceapp.Utils.DeviceUtils;
 
 public class SplashActivity extends AppCompatActivity {
+
+    private static final String TAG = "SplashActivity";
 
     private FirebaseAuth mAuth;
 
