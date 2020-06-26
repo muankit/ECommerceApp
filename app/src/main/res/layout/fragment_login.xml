@@ -55,21 +55,65 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
 
-    <View
+    <RelativeLayout
+        android:id="@+id/dummy_relative_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_continue">
+
+        <View
+            android:id="@+id/blank_view"
+            android:layout_width="wrap_content"
+            android:layout_height="2dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_toStartOf="@+id/dummy_or_text"
+            android:background="@color/onSurface"
+            android:layout_marginTop="10dp"/>
+
+        <TextView
+            android:id="@+id/dummy_or_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="OR"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+
+        <View
+            android:id="@+id/blank_view2"
+            android:layout_width="wrap_content"
+            android:layout_height="2dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_toEndOf="@+id/dummy_or_text"
+            android:background="@color/onSurface"
+            android:layout_marginTop="10dp"/>
+
+    </RelativeLayout>
+
+    <!--<View
         android:id="@+id/blank_view"
         android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:background="@color/cardview_dark_background"
+        android:layout_height="2dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:background="@color/onSurface"
         app:layout_constraintTop_toBottomOf="@id/btn_continue"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="10dp"/>-->
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/btn_sign_in_with_google"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/blank_view"
+        app:layout_constraintTop_toBottomOf="@id/dummy_relative_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="10dp"/>
