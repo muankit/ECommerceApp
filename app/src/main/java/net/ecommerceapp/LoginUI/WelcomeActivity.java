@@ -1,12 +1,10 @@
 package net.ecommerceapp.LoginUI;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
+import androidx.appcompat.widget.AppCompatButton;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import com.google.android.material.button.MaterialButton;
 
@@ -14,7 +12,7 @@ import net.ecommerceapp.R;
 
 public class WelcomeActivity extends AppCompatActivity {
 
-    MaterialButton btnContinue;
+    AppCompatButton btnContinue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
