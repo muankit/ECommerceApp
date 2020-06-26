@@ -51,6 +51,7 @@
         <item name="fontFamily">@font/work_sans</item>
         <item name="android:fontFamily">@font/work_sans</item>
         <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/onSurface</item>
     </style>
     <style name="TextAppearance.MdcTypographyStyles.Body1" parent="TextAppearance.MaterialComponents.Body1">
         <item name="fontFamily">@font/work_sans</item>
