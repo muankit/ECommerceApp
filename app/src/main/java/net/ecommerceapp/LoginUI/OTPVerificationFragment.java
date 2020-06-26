@@ -1,5 +1,6 @@
 package net.ecommerceapp.LoginUI;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -60,7 +61,7 @@ public class OTPVerificationFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_o_t_p_verification, container, false);
 
         Bundle bundle = getArguments();
-        phoneNumber = bundle.getString("EnteredMobile");
+        phoneNumber = "+91" + bundle.getString("EnteredMobile");
 
         otp1 = view.findViewById(R.id.etOTP1); otp1.addTextChangedListener(new GenericTextWatcher(otp1));
         otp2 = view.findViewById(R.id.etOTP2); otp2.addTextChangedListener(new GenericTextWatcher(otp2));
@@ -173,7 +174,7 @@ public class OTPVerificationFragment extends Fragment {
                 phoneNumber,        // Phone number to verify
                 60,                 // Timeout duration
                 TimeUnit.SECONDS,   // Unit of timeout
-                (Executor) view,               // Activity (for callback binding)
+                (Activity) view.getContext(),               // Activity (for callback binding)
                 mCallbacks);
         startCountDown();
     }

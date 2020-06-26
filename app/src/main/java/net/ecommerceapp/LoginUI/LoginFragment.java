@@ -22,6 +22,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,6 +46,7 @@ public class LoginFragment extends Fragment {
     TextInputEditText etMobileNumber;
     AppCompatButton btnContinue;
     SignInButton btnGoogleSignin;
+    TextInputLayout mTextInputLayout;
 
     GoogleSignInClient mGoogleSignInClient;
     public static int RC_SIGN_IN = 999;
@@ -59,9 +61,7 @@ public class LoginFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
 
-        etMobileNumber = view.findViewById(R.id.et_mobile_number);
-        btnContinue = view.findViewById(R.id.btn_continue);
-        btnGoogleSignin = view.findViewById(R.id.btn_sign_in_with_google);
+        init(view);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -72,10 +72,11 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(etMobileNumber.getText().length() != 10) {
-                    etMobileNumber.setError("Check Mobile Number");
-                    etMobileNumber.requestFocus();
+                    mTextInputLayout.setError("Check Mobile Number");
+                    //  etMobileNumber.requestFocus();
                 }
                 else {
+                    mTextInputLayout.setError(null);
                     //otp verification fragment
                     Bundle b = new Bundle();
                     b.putString("EnteredMobile",etMobileNumber.getText().toString());
@@ -97,6 +98,14 @@ public class LoginFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void init(View view) {
+
+        etMobileNumber = view.findViewById(R.id.et_mobile_number);
+        btnContinue = view.findViewById(R.id.btn_continue);
+        btnGoogleSignin = view.findViewById(R.id.btn_sign_in_with_google);
+        mTextInputLayout = view.findViewById(R.id.textInputLayout);
     }
 
     private void updateUserDetailsOnDatabase(Task<GoogleSignInAccount> completedTask) {
