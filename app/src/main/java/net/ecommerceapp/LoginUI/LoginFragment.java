@@ -32,7 +32,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import net.ecommerceapp.MainActivity;
+import net.ecommerceapp.Home.MainActivity;
 import net.ecommerceapp.R;
 import net.ecommerceapp.Utils.DeviceUtils;
 
