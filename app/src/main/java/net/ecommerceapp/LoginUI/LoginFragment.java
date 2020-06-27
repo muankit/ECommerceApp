@@ -1,5 +1,6 @@
 package net.ecommerceapp.LoginUI;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -7,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +33,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import net.ecommerceapp.Home.MainActivity;
 import net.ecommerceapp.R;
@@ -38,7 +41,7 @@ import net.ecommerceapp.Utils.DeviceUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.Objects;
 
 public class LoginFragment extends Fragment {
 
@@ -141,24 +144,48 @@ public class LoginFragment extends Fragment {
     private void firebaseAuthWithGoogle(String idToken,final Map<String, Object> userData) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         FirebaseAuth.getInstance().signInWithCredential(credential)
-                .addOnCompleteListener((Executor) this, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener((Activity) view.getContext(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             //FirebaseUser user = mAuth.getCurrentUser();
 
-                            db.collection("Users").add(userData).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                @Override
-                                public void onSuccess(DocumentReference documentReference) {
+                            final String currentUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                                    Intent googleSigninIntent = new Intent(view.getContext(), MainActivity.class);
-                                    googleSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                    startActivity(googleSigninIntent);
+                            db.collection("Users").whereEqualTo("Email",userData.get("Email")).get()
+                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                            if(Objects.requireNonNull(task.getResult()).size() > 0){
+                                                //User Already Exist
 
-                                }
-                            });
+                                                Log.d("accountcreation", "onComplete: user exist");
 
+                                                db.collection("Users").document(currentUser).update(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Intent googleSigninIntent = new Intent(view.getContext(), MainActivity.class);
+                                                        googleSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        startActivity(googleSigninIntent);
+                                                    }
+                                                });
+
+                                            }else{
+                                                //add a new user to Firestore database
+                                                Log.d("accountcreation", "onComplete: user not exist");
+
+                                                db.collection("Users").document(currentUser).set(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Intent googleSigninIntent = new Intent(view.getContext(), MainActivity.class);
+                                                        googleSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        startActivity(googleSigninIntent);
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
                         } else {
                             // If sign in fails, display a message to the user.
                             Snackbar.make(view, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();

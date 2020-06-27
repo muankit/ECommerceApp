@@ -1,6 +1,7 @@
 package net.ecommerceapp.LoginUI;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseException;
@@ -26,16 +28,22 @@ import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import net.ecommerceapp.Home.MainActivity;
 import net.ecommerceapp.R;
 import net.ecommerceapp.Utils.DeviceUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class OTPVerificationFragment extends Fragment {
@@ -54,11 +62,16 @@ public class OTPVerificationFragment extends Fragment {
 
     String phoneNumber;
 
+    Map<String, Object> userData;
+    FirebaseFirestore db;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_o_t_p_verification, container, false);
+
+        db = FirebaseFirestore.getInstance();
 
         Bundle bundle = getArguments();
         phoneNumber = "+91" + bundle.getString("EnteredMobile");
@@ -92,7 +105,7 @@ public class OTPVerificationFragment extends Fragment {
                         phoneNumber,        // Phone number to verify
                         60,                 // Timeout duration
                         TimeUnit.SECONDS,   // Unit of timeout
-                        (Executor) view,               // Activity (for callback binding)
+                        (Activity) view.getContext(),               // Activity (for callback binding)
                         mCallbacks,         // OnVerificationStateChangedCallbacks
                         mloginResendToken);
 
@@ -113,7 +126,9 @@ public class OTPVerificationFragment extends Fragment {
 
     private void checkUserExistenceAndProceed() {
 
-        Map<String, Object> userData = new HashMap<>();
+        final String currentUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        userData = new HashMap<>();
         userData.put("MobileNumber", phoneNumber);
         userData.put("RegisteredWith","Mobile");
         userData.put("DeviceIMEI", DeviceUtils.getDeviceIMEI(view.getContext()));
@@ -122,10 +137,44 @@ public class OTPVerificationFragment extends Fragment {
         userData.put("RootStatus",DeviceUtils.isDeviceRooted());
         userData.put("AccountCreationTime", FieldValue.serverTimestamp());
 
+        db.collection("Users").whereEqualTo("MobileNumber",phoneNumber).get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(Objects.requireNonNull(task.getResult()).size() > 0){
+                            //User Already Exist
+
+                            Log.d("accountcreation", "onComplete: user exist");
+
+                            db.collection("Users").document(currentUser).update(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Intent mobileSigninIntent = new Intent(view.getContext(), MainActivity.class);
+                                    mobileSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(mobileSigninIntent);
+                                }
+                            });
+
+                        }else{
+                            //add a new user to Firestore database
+                            Log.d("accountcreation", "onComplete: user not exist");
+
+                            db.collection("Users").document(currentUser).set(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Intent mobileSigninIntent = new Intent(view.getContext(), MainActivity.class);
+                                    mobileSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(mobileSigninIntent);
+                                }
+                            });
+                        }
+                    }
+                });
+
     }
 
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
-        FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener((Executor) this, new OnCompleteListener<AuthResult>() {
+        FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener((Activity) view.getContext(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
@@ -298,7 +347,7 @@ public class OTPVerificationFragment extends Fragment {
                                 + otp3.getText().toString() + otp4.getText().toString()
                                 + otp5.getText().toString() + otp6.getText().toString();
 
-                        verifyCode(entered_otp);
+                        //verifyCode(entered_otp);
                     }
                     break;
             }

@@ -149,7 +149,8 @@
             android:textColor="@color/colorGray"
             android:textAppearance="@style/TextAppearance.MdcTypographyStyles.Subtitle2"
             android:textStyle="bold"
-            android:layout_alignParentEnd="true"/>
+            android:layout_alignParentEnd="true"
+            android:visibility="invisible"/>
 
     </RelativeLayout>
 
