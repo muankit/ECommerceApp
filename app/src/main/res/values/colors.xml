@@ -9,4 +9,8 @@
     <color name="onPrimary">#FFFFFF</color>
     <color name="onSecondary">#000000</color>
     <color name="onSurface">#828282</color>
+
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorGray">#9C9C9C</color>
 </resources>

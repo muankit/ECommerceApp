@@ -42,6 +42,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:19.3.1'
     implementation 'com.google.android.gms:play-services-auth:18.0.0'
 
+    //Firestore
+    implementation 'com.google.firebase:firebase-firestore:21.4.3'
+
     //Expandable Text View
     implementation 'at.blogc:expandabletextview:1.0.5'
 
