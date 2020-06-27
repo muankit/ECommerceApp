@@ -8,6 +8,7 @@ import android.os.Bundle;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import net.ecommerceapp.Home.MainActivity;
 import net.ecommerceapp.LoginUI.WelcomeActivity;
 
 public class SplashActivity extends AppCompatActivity {
