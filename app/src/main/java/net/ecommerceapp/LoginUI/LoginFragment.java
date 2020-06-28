@@ -124,15 +124,15 @@ public class LoginFragment extends Fragment {
             userEmail = account.getEmail();
 
             Map<String, Object> userData = new HashMap<>();
-            userData.put("Name", userName);
-            userData.put("Email", userEmail);
-            userData.put("ProfileImage",profileImageUrl);
-            userData.put("RegisteredWith","Gmail");
-            userData.put("DeviceIMEI", DeviceUtils.getDeviceIMEI(view.getContext()));
-            userData.put("DeviceName",DeviceUtils.getDeviceName());
-            userData.put("DeviceVersion",DeviceUtils.getDeviceVersion());
-            userData.put("RootStatus",DeviceUtils.isDeviceRooted());
-            userData.put("AccountCreationTime", FieldValue.serverTimestamp());
+            userData.put("name", userName);
+            userData.put("email", userEmail);
+            userData.put("profileImage",profileImageUrl);
+            userData.put("registeredWith","Gmail");
+            userData.put("deviceIMEI", DeviceUtils.getDeviceIMEI(view.getContext()));
+            userData.put("deviceName",DeviceUtils.getDeviceName());
+            userData.put("deviceVersion",DeviceUtils.getDeviceVersion());
+            userData.put("rootStatus",DeviceUtils.isDeviceRooted());
+            userData.put("accountCreationTime", FieldValue.serverTimestamp());
 
             firebaseAuthWithGoogle(account.getIdToken(),userData);
 
