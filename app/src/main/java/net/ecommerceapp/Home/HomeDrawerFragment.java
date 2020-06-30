@@ -32,6 +32,13 @@ public class HomeDrawerFragment extends Fragment {
         
         init(view);
 
+        mDrawerCloseBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDrawerLayout.closeDrawers();
+            }
+        });
+
         return view;
     }
 
@@ -73,7 +80,11 @@ public class HomeDrawerFragment extends Fragment {
             }
         };
 
+        mDrawerToggle.setDrawerIndicatorEnabled(false);
+        mDrawerToggle.setHomeAsUpIndicator(R.drawable.drawer_menu);
+
         mDrawerLayout.addDrawerListener(mDrawerToggle);
+
 
         mDrawerLayout.post(() -> mDrawerToggle.syncState());
 
