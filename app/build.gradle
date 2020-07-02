@@ -29,6 +29,9 @@ android {
 }
 
 dependencies {
+
+    def nav_version = "2.3.0"
+
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta7'
@@ -49,5 +52,9 @@ dependencies {
 
     //Expandable Text View
     implementation 'at.blogc:expandabletextview:1.0.5'
+
+    // Java language implementation
+    implementation "androidx.navigation:navigation-fragment:$nav_version"
+    implementation "androidx.navigation:navigation-ui:$nav_version"
 
 }
