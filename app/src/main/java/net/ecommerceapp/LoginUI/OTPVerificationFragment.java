@@ -1,6 +1,7 @@
 package net.ecommerceapp.LoginUI;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -54,16 +55,18 @@ public class OTPVerificationFragment extends Fragment {
     TextView countDownText , tvChangeNumber, tvResendOtp;
     AppCompatButton btnVerify;
     //countdown timer declaration
-    private long seconds, minutes, millisRemaining;
+    private long seconds, minutes;
     CountDownTimer mloginCountDownTimer = null;
 
-    private String mloginVerificationId;
-    private PhoneAuthProvider.ForceResendingToken mloginResendToken;
+    private String mVerificationId;
+    private PhoneAuthProvider.ForceResendingToken mResendToken;
 
     String phoneNumber;
 
     Map<String, Object> userData;
     FirebaseFirestore db;
+
+    ProgressDialog mProgress;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -88,12 +91,16 @@ public class OTPVerificationFragment extends Fragment {
         tvResendOtp = view.findViewById(R.id.tv_resent_otp);
         btnVerify = view.findViewById(R.id.btn_verify);
 
+        mProgress = new ProgressDialog(view.getContext());
+
         sendVerificationOTP();
 
         tvChangeNumber.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.slide_up, R.anim.slide_down, R.anim.slide_up, R.anim.slide_down)
+                        .replace(R.id.login_frame_layout, new LoginFragment()).addToBackStack(null).commit();
             }
         });
 
@@ -107,7 +114,7 @@ public class OTPVerificationFragment extends Fragment {
                         TimeUnit.SECONDS,   // Unit of timeout
                         (Activity) view.getContext(),               // Activity (for callback binding)
                         mCallbacks,         // OnVerificationStateChangedCallbacks
-                        mloginResendToken);
+                        mResendToken);
 
             }
         });
@@ -143,27 +150,24 @@ public class OTPVerificationFragment extends Fragment {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if(Objects.requireNonNull(task.getResult()).size() > 0){
                             //User Already Exist
-
-                            Log.d("accountcreation", "onComplete: user exist");
-
                             db.collection("Users").document(currentUser).update(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
+                                    mProgress.dismiss();
                                     Intent mobileSigninIntent = new Intent(view.getContext(), MainActivity.class);
-                                    mobileSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    mobileSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(mobileSigninIntent);
                                 }
                             });
 
                         }else{
                             //add a new user to Firestore database
-                            Log.d("accountcreation", "onComplete: user not exist");
-
                             db.collection("Users").document(currentUser).set(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
+                                    mProgress.dismiss();
                                     Intent mobileSigninIntent = new Intent(view.getContext(), MainActivity.class);
-                                    mobileSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    mobileSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(mobileSigninIntent);
                                 }
                             });
@@ -174,6 +178,12 @@ public class OTPVerificationFragment extends Fragment {
     }
 
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
+
+        mProgress.setTitle("Logging you in");
+        mProgress.setMessage("Please wait while we check the otp and get your account ready...");
+        mProgress.setCanceledOnTouchOutside(false);
+        mProgress.show();
+
         FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener((Activity) view.getContext(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -189,7 +199,7 @@ public class OTPVerificationFragment extends Fragment {
     }
 
     private void verifyCode(String otp) {
-        PhoneAuthCredential credentials = PhoneAuthProvider.getCredential(mloginVerificationId, otp);
+        PhoneAuthCredential credentials = PhoneAuthProvider.getCredential(mVerificationId, otp);
         signInWithPhoneAuthCredential(credentials);
     }
 
@@ -198,8 +208,6 @@ public class OTPVerificationFragment extends Fragment {
 
             @Override
             public void onTick(long millisUntilFinished) {
-
-                millisRemaining = millisUntilFinished;
 
                 seconds = (long) (millisUntilFinished / 1000);
                 minutes = seconds / 60;
@@ -259,8 +267,8 @@ public class OTPVerificationFragment extends Fragment {
         public void onCodeSent(@NonNull String verificationId,@NonNull PhoneAuthProvider.ForceResendingToken token) {
             super.onCodeSent(verificationId, token);
 
-            mloginVerificationId = verificationId;
-            mloginResendToken = token;
+            mVerificationId = verificationId;
+            mResendToken = token;
 
         }
     };
@@ -347,7 +355,7 @@ public class OTPVerificationFragment extends Fragment {
                                 + otp3.getText().toString() + otp4.getText().toString()
                                 + otp5.getText().toString() + otp6.getText().toString();
 
-                        //verifyCode(entered_otp);
+                        verifyCode(entered_otp);
                     }
                     break;
             }

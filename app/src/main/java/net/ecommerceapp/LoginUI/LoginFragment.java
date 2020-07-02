@@ -1,6 +1,7 @@
 package net.ecommerceapp.LoginUI;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -56,6 +57,8 @@ public class LoginFragment extends Fragment {
 
     FirebaseFirestore db;
 
+    ProgressDialog mProgress;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -67,6 +70,7 @@ public class LoginFragment extends Fragment {
         init(view);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(container.getContext(), gso);
@@ -104,44 +108,40 @@ public class LoginFragment extends Fragment {
     }
 
     private void init(View view) {
-
         etMobileNumber = view.findViewById(R.id.et_mobile_number);
         btnContinue = view.findViewById(R.id.btn_continue);
         btnGoogleSignin = view.findViewById(R.id.btn_sign_in_with_google);
         mTextInputLayout = view.findViewById(R.id.textInputLayout);
+
+        mProgress = new ProgressDialog(view.getContext());
     }
 
-    private void updateUserDetailsOnDatabase(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+    private Map<String, Object> generateUserDataMap(GoogleSignInAccount account) {
 
-            // Signed in successfully, show authenticated UI.
+        Map<String, Object> generatedMap = new HashMap<>();
+        String profileImageUrl = "", userName = "", userEmail = "";
+        if(account.getPhotoUrl()!=null)
+            profileImageUrl = account.getPhotoUrl().toString();
+        userName = account.getDisplayName();
+        userEmail = account.getEmail();
 
-            String profileImageUrl = "", userName = "", userEmail = "";
-            if(account.getPhotoUrl()!=null)
-                profileImageUrl = account.getPhotoUrl().toString();
-            userName = account.getDisplayName();
-            userEmail = account.getEmail();
+        generatedMap.put("name", userName);
+        generatedMap.put("email", userEmail);
+        generatedMap.put("profileImage",profileImageUrl);
+        generatedMap.put("registeredWith","Gmail");
+        generatedMap.put("deviceIMEI", DeviceUtils.getDeviceIMEI(view.getContext()));
+        generatedMap.put("deviceName",DeviceUtils.getDeviceName());
+        generatedMap.put("deviceVersion",DeviceUtils.getDeviceVersion());
+        generatedMap.put("rootStatus",DeviceUtils.isDeviceRooted());
+        generatedMap.put("accountCreationTime", FieldValue.serverTimestamp());
 
-            Map<String, Object> userData = new HashMap<>();
-            userData.put("name", userName);
-            userData.put("email", userEmail);
-            userData.put("profileImage",profileImageUrl);
-            userData.put("registeredWith","Gmail");
-            userData.put("deviceIMEI", DeviceUtils.getDeviceIMEI(view.getContext()));
-            userData.put("deviceName",DeviceUtils.getDeviceName());
-            userData.put("deviceVersion",DeviceUtils.getDeviceVersion());
-            userData.put("rootStatus",DeviceUtils.isDeviceRooted());
-            userData.put("accountCreationTime", FieldValue.serverTimestamp());
-
-            firebaseAuthWithGoogle(account.getIdToken(),userData);
-
-        } catch (ApiException e) {
-            Snackbar.make(view, "Error Occurred",Snackbar.LENGTH_LONG).show();
-        }
+        return generatedMap;
     }
 
-    private void firebaseAuthWithGoogle(String idToken,final Map<String, Object> userData) {
+    private void firebaseAuthWithGoogle(String idToken , GoogleSignInAccount account) {
+
+        Map<String, Object> userData = generateUserDataMap(account);
+
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         FirebaseAuth.getInstance().signInWithCredential(credential)
                 .addOnCompleteListener((Activity) view.getContext(), new OnCompleteListener<AuthResult>() {
@@ -159,27 +159,24 @@ public class LoginFragment extends Fragment {
                                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                             if(Objects.requireNonNull(task.getResult()).size() > 0){
                                                 //User Already Exist
-
-                                                Log.d("accountcreation", "onComplete: user exist");
-
                                                 db.collection("Users").document(currentUser).update(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
+                                                        mProgress.dismiss();
                                                         Intent googleSigninIntent = new Intent(view.getContext(), MainActivity.class);
-                                                        googleSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        googleSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                                         startActivity(googleSigninIntent);
                                                     }
                                                 });
 
                                             }else{
                                                 //add a new user to Firestore database
-                                                Log.d("accountcreation", "onComplete: user not exist");
-
                                                 db.collection("Users").document(currentUser).set(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
+                                                        mProgress.dismiss();
                                                         Intent googleSigninIntent = new Intent(view.getContext(), MainActivity.class);
-                                                        googleSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        googleSigninIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                                         startActivity(googleSigninIntent);
                                                     }
                                                 });
@@ -190,7 +187,6 @@ public class LoginFragment extends Fragment {
                             // If sign in fails, display a message to the user.
                             Snackbar.make(view, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
                         }
-
                         // ...
                     }
                 });
@@ -199,9 +195,26 @@ public class LoginFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            updateUserDetailsOnDatabase(task);
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                if(account != null) {
+                    firebaseAuthWithGoogle(account.getIdToken(), account);
+
+                    mProgress.setTitle("Logging you in");
+                    mProgress.setMessage("Please wait while we check the details and get your account ready...");
+                    mProgress.setCanceledOnTouchOutside(false);
+                    mProgress.show();
+                }
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                Snackbar.make(view, "Error Occurred",Snackbar.LENGTH_LONG).show();
+                // ...
+            }
         }
+
     }
 }
